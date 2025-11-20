@@ -13,9 +13,7 @@
       line-height: 1.5;
       background: #f7f7f7;
     }
-    h1, h2 {
-      text-align: center;
-    }
+    h1, h2 { text-align: center; }
     .card {
       background: #ffffff;
       padding: 1.5rem;
@@ -28,383 +26,217 @@
       padding-bottom: 0.8rem;
       border-bottom: 1px solid #eee;
     }
-    .question:last-of-type {
-      border-bottom: none;
-    }
-    .question p {
-      margin: 0 0 0.5rem 0;
-      font-weight: 600;
-    }
-    .options {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem 1.5rem;
-    }
-    label {
-      font-weight: 400;
-      cursor: pointer;
-    }
-    .small-muted {
-      font-size: 0.85rem;
-      color: #666;
-    }
-    button {
-      padding: 0.7rem 1.4rem;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
-      font-size: 1rem;
-    }
-    #submitBtn {
-      background: #2563eb;
-      color: white;
-    }
-    #submitBtn:hover {
-      opacity: 0.9;
-    }
-    #copyBtn, #downloadCsvBtn {
-      background: #e5e7eb;
-      margin-top: 0.5rem;
-      margin-right: 0.5rem;
-    }
-    #resultsCard {
-      display: none;
-    }
+    .question:last-of-type { border-bottom: none; }
+    .options { display: flex; flex-wrap: wrap; gap: 0.4rem 1.5rem; }
+    label { cursor: pointer; }
+    .small-muted { font-size: 0.85rem; color: #666; }
     textarea {
       width: 100%;
-      min-height: 140px;
+      min-height: 150px;
       font-family: monospace;
       font-size: 0.9rem;
     }
-    footer {
-      font-size: 0.8rem;
-      color: #555;
-      margin-top: 1rem;
+    button {
+      padding: 0.7rem 1.3rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
     }
+    #submitBtn { background: #2563eb; color: white; }
+    #downloadCsvBtn, #copyBtn { background: #ddd; margin-top: 0.5rem; margin-right: 0.5rem; }
+    #resultsCard { display: none; }
   </style>
 </head>
 <body>
 
-  <h1>PROMIS v2.0</h1>
-  <h2>Satisfacción con la vida sexual (versión española)</h2>
+<h1>PROMIS v2.0</h1>
+<h2>Satisfacción con la vida sexual</h2>
 
-  <div class="card">
-    <p class="small-muted">
-      Responda a cada pregunta marcando una opción. Este cuestionario es anónimo
-      salvo que su profesional sanitario le indique lo contrario.
-    </p>
-  </div>
+<div class="card">
+  <p class="small-muted">
+    Responda a cada pregunta marcando una opción. Este cuestionario es anónimo salvo indicación contraria.
+  </p>
+</div>
 
-  <form id="promis-form" class="card">
-    <!-- Sexo de referencia -->
-    <div class="question">
-      <p>Sexo con el que desea que se comparen sus resultados en las normas PROMIS:</p>
-      <div class="options">
-        <label><input type="radio" name="sexo_ref" value="F" required> Mujer</label>
-        <label><input type="radio" name="sexo_ref" value="M"> Hombre</label>
-      </div>
-      <p class="small-muted">
-        Esta información solo se utiliza para aplicar las tablas de puntuación PROMIS
-        con normas específicas por sexo (en este ejemplo se usa la misma tabla para ambos).
-      </p>
-    </div>
+<form id="promis-form" class="card">
 
-    <!-- SFSAT101 -->
-    <div class="question">
-      <p>En los últimos 30 días, ¿hasta qué punto ha estado satisfecho/a con su vida sexual? (SFSAT101)</p>
-      <div class="options">
-        <label><input type="radio" name="SFSAT101" value="1" required> 1 – Nada</label>
-        <label><input type="radio" name="SFSAT101" value="2"> 2 – Un poco</label>
-        <label><input type="radio" name="SFSAT101" value="3"> 3 – Algo</label>
-        <label><input type="radio" name="SFSAT101" value="4"> 4 – Bastante</label>
-        <label><input type="radio" name="SFSAT101" value="5"> 5 – Mucho</label>
-      </div>
-    </div>
-
-    <!-- SFSAT102r -->
-    <div class="question">
-      <p>En los últimos 30 días, ¿cuánto placer le ha dado su vida sexual? (SFSAT102r)</p>
-      <div class="options">
-        <label><input type="radio" name="SFSAT102r" value="1" required> 1 – Nada</label>
-        <label><input type="radio" name="SFSAT102r" value="2"> 2 – Un poco</label>
-        <label><input type="radio" name="SFSAT102r" value="3"> 3 – Algo</label>
-        <label><input type="radio" name="SFSAT102r" value="4"> 4 – Bastante</label>
-        <label><input type="radio" name="SFSAT102r" value="5"> 5 – Mucho</label>
-      </div>
-    </div>
-
-    <!-- SFSAT103 -->
-    <div class="question">
-      <p>En los últimos 30 días, ¿con qué frecuencia ha pensado que su vida sexual es maravillosa? (SFSAT103)</p>
-      <div class="options">
-        <label><input type="radio" name="SFSAT103" value="1" required> 1 – Nunca</label>
-        <label><input type="radio" name="SFSAT103" value="2"> 2 – Rara vez</label>
-        <label><input type="radio" name="SFSAT103" value="3"> 3 – Algunas veces</label>
-        <label><input type="radio" name="SFSAT103" value="4"> 4 – A menudo</label>
-        <label><input type="radio" name="SFSAT103" value="5"> 5 – Siempre</label>
-      </div>
-    </div>
-
-    <!-- SFSAT201 -->
-    <div class="question">
-      <p>En los últimos 30 días, ¿hasta qué punto ha estado satisfecho/a con sus relaciones de tipo sexual? (SFSAT201)</p>
-      <div class="options">
-        <label><input type="radio" name="SFSAT201" value="0" required> 0 – No he tenido una relación de tipo sexual en los últimos 30 días</label>
-        <label><input type="radio" name="SFSAT201" value="1"> 1 – Nada</label>
-        <label><input type="radio" name="SFSAT201" value="2"> 2 – Un poco</label>
-        <label><input type="radio" name="SFSAT201" value="3"> 3 – Algo</label>
-        <label><input type="radio" name="SFSAT201" value="4"> 4 – Bastante</label>
-        <label><input type="radio" name="SFSAT201" value="5"> 5 – Mucho</label>
-      </div>
-    </div>
-
-    <!-- SFSAT105r (descriptivo, no entra en el T-score) -->
-    <div class="question">
-      <p>En los últimos 30 días, cuando ha tenido actividad sexual, ¿cuánto la ha disfrutado? (SFSAT105r)</p>
-      <div class="options">
-        <label><input type="radio" name="SFSAT105r" value="1" required> 1 – Nada</label>
-        <label><input type="radio" name="SFSAT105r" value="2"> 2 – Un poco</label>
-        <label><input type="radio" name="SFSAT105r" value="3"> 3 – Algo</label>
-        <label><input type="radio" name="SFSAT105r" value="4"> 4 – Mucho</label>
-        <label><input type="radio" name="SFSAT105r" value="5"> 5 – Muchísimo</label>
-      </div>
-      <p class="small-muted">
-        Este ítem se utiliza de forma descriptiva y no se incluye en la puntuación PROMIS
-        de “Satisfacción con la vida sexual”.
-      </p>
-    </div>
-
-    <p class="small-muted">
-      Nota: las puntuaciones numéricas son para uso del profesional sanitario.
-    </p>
-
-    <button id="submitBtn" type="submit">Enviar cuestionario</button>
-  </form>
-
-  <div id="resultsCard" class="card">
-    <h3>Resumen de resultados</h3>
-    <p class="small-muted">
-      Se muestran las respuestas, la puntuación bruta (raw score) y el T-score PROMIS
-      para el dominio “Satisfaction with Sex Life” (media 50, DE 10).
-    </p>
-    <textarea id="resultsText" readonly></textarea>
-    <div>
-      <button id="copyBtn" type="button">Copiar resultados</button>
-      <button id="downloadCsvBtn" type="button">Descargar CSV</button>
+  <!-- Sexo -->
+  <div class="question">
+    <p>Sexo de referencia para normas PROMIS:</p>
+    <div class="options">
+      <label><input type="radio" name="sexo_ref" value="F" required> Mujer</label>
+      <label><input type="radio" name="sexo_ref" value="M"> Hombre</label>
     </div>
   </div>
 
-  <footer class="card">
-    <strong>Información sobre licencia y traducción</strong>
-    <p class="small-muted">
-      Esta versión española de los ítems PROMIS de función sexual y satisfacción fue
-      traducida siguiendo la metodología FACITtrans y validada para población hispanohablante.
-    </p>
-    <p class="small-muted">
-      El uso de la escala PROMIS Scale v2.0 – Sexual Function and Satisfaction: Satisfaction with Sex Life
-      está autorizado mediante acuerdo de licencia con PROMIS Health Organization (PHO).
-    </p>
-    <p class="small-muted">
-      © PROMIS Health Organization (PHO). Este material puede reproducirse sin permiso
-      por clínicos para utilizarlo con sus propios pacientes. Cualquier otro uso, incluido el uso
-      electrónico, requiere el permiso escrito de PHO.
-    </p>
-  </footer>
+  <!-- Ítems -->
+  <div class="question">
+    <p>SFSAT101 – ¿Hasta qué punto ha estado satisfecho/a con su vida sexual?</p>
+    <div class="options">
+      <label><input type="radio" name="SFSAT101" value="1" required>1</label>
+      <label><input type="radio" name="SFSAT101" value="2">2</label>
+      <label><input type="radio" name="SFSAT101" value="3">3</label>
+      <label><input type="radio" name="SFSAT101" value="4">4</label>
+      <label><input type="radio" name="SFSAT101" value="5">5</label>
+    </div>
+  </div>
 
-  <script>
-    // Array en memoria con todas las respuestas de esta sesión (para CSV local)
-    const allResults = [];
+  <div class="question">
+    <p>SFSAT102r – ¿Cuánto placer le ha dado su vida sexual?</p>
+    <div class="options">
+      <label><input type="radio" name="SFSAT102r" value="1" required>1</label>
+      <label><input type="radio" name="SFSAT102r" value="2">2</label>
+      <label><input type="radio" name="SFSAT102r" value="3">3</label>
+      <label><input type="radio" name="SFSAT102r" value="4">4</label>
+      <label><input type="radio" name="SFSAT102r" value="5">5</label>
+    </div>
+  </div>
 
-    // Tabla oficial RAW -> T-score para "Satisfaction with Sex Life"
-    // (la que me pasaste: raw 4–20)
-    const tScoreTableFemale = {
-      4: 30.7,
-      5: 35.6,
-      6: 37.6,
-      7: 39.1,
-      8: 40.5,
-      9: 41.8,
-      10: 43.3,
-      11: 44.7,
-      12: 46.2,
-      13: 47.8,
-      14: 49.4,
-      15: 51.1,
-      16: 52.8,
-      17: 54.6,
-      18: 56.7,
-      19: 59.5,
-      20: 65.1
-    };
+  <div class="question">
+    <p>SFSAT103 – ¿Con qué frecuencia ha pensado que su vida sexual es maravillosa?</p>
+    <div class="options">
+      <label><input type="radio" name="SFSAT103" value="1" required>1</label>
+      <label><input type="radio" name="SFSAT103" value="2">2</label>
+      <label><input type="radio" name="SFSAT103" value="3">3</label>
+      <label><input type="radio" name="SFSAT103" value="4">4</label>
+      <label><input type="radio" name="SFSAT103" value="5">5</label>
+    </div>
+  </div>
 
-    // De momento usamos la misma tabla para hombres.
-    // Si el manual tiene una tabla distinta masculina, la puedes poner aquí.
-    const tScoreTableMale = { ...tScoreTableFemale };
+  <div class="question">
+    <p>SFSAT201 – ¿Hasta qué punto ha estado satisfecho/a con sus relaciones sexuales?</p>
+    <div class="options">
+      <label><input type="radio" name="SFSAT201" value="0" required>0 – No he tenido relaciones</label>
+      <label><input type="radio" name="SFSAT201" value="1">1</label>
+      <label><input type="radio" name="SFSAT201" value="2">2</label>
+      <label><input type="radio" name="SFSAT201" value="3">3</label>
+      <label><input type="radio" name="SFSAT201" value="4">4</label>
+      <label><input type="radio" name="SFSAT201" value="5">5</label>
+    </div>
+  </div>
 
-    function getTScoreFromRaw(rawScore, sexoRef) {
-      const table = sexoRef === "M" ? tScoreTableMale : tScoreTableFemale;
-      if (!table) return null;
-      return table[rawScore] ?? null;
-    }
+  <div class="question">
+    <p>SFSAT105r – ¿Cuánto ha disfrutado la actividad sexual? (Descriptivo)</p>
+    <div class="options">
+      <label><input type="radio" name="SFSAT105r" value="1" required>1</label>
+      <label><input type="radio" name="SFSAT105r" value="2">2</label>
+      <label><input type="radio" name="SFSAT105r" value="3">3</label>
+      <label><input type="radio" name="SFSAT105r" value="4">4</label>
+      <label><input type="radio" name="SFSAT105r" value="5">5</label>
+    </div>
+  </div>
 
-    // Interpretación sencilla del T-score en la métrica PROMIS (media 50, DE 10).
-    function interpretTScore(tScore) {
-      if (tScore == null) {
-        return "No se ha podido calcular el T-score (puntuación bruta fuera de rango o tabla incompleta).";
-      }
+  <button id="submitBtn" type="submit">Enviar</button>
+</form>
 
-      if (tScore < 40) {
-        return "Baja satisfacción con la vida sexual (más de 1 DE por debajo de la media de la población de referencia).";
-      } else if (tScore <= 60) {
-        return "Satisfacción con la vida sexual dentro del rango medio (±1 DE alrededor de la media).";
-      } else {
-        return "Alta satisfacción con la vida sexual (más de 1 DE por encima de la media de la población de referencia).";
-      }
-    }
+<div id="resultsCard" class="card">
+  <h3>Resultados</h3>
+  <textarea id="resultsText" readonly></textarea>
+  <button id="copyBtn">Copiar</button>
+  <button id="downloadCsvBtn">Descargar CSV</button>
+</div>
 
-    const form = document.getElementById('promis-form');
-    const resultsCard = document.getElementById('resultsCard');
-    const resultsText = document.getElementById('resultsText');
-    const copyBtn = document.getElementById('copyBtn');
-    const downloadCsvBtn = document.getElementById('downloadCsvBtn');
+<script>
+/* -----------------------------------
+   TABLA RAW → T-SCORE (OFICIAL PROMIS)
+--------------------------------------*/
 
-    form.addEventListener('submit', function (event) {
-      event.preventDefault();
+const tScoreTable = {
+  4: 30.7,
+  5: 35.6,
+  6: 37.6,
+  7: 39.1,
+  8: 40.5,
+  9: 41.8,
+  10: 43.3,
+  11: 44.7,
+  12: 46.2,
+  13: 47.8,
+  14: 49.4,
+  15: 51.1,
+  16: 52.8,
+  17: 54.6,
+  18: 56.7,
+  19: 59.5,
+  20: 65.1
+};
 
-      const formData = new FormData(form);
-      const entries = Object.fromEntries(formData.entries());
-      const sexoRef = entries.sexo_ref || "F";
+/* INTERPRETACIÓN */
+function interpretTScore(t) {
+  if (t < 40) return "Baja satisfacción sexual (−1 DE por debajo del promedio)";
+  if (t <= 60) return "Satisfacción dentro del rango promedio (±1 DE)";
+  return "Alta satisfacción sexual (+1 DE por encima del promedio)";
+}
 
-      const s1 = Number(entries.SFSAT101 || 0);
-      const s2 = Number(entries.SFSAT102r || 0);
-      const s3 = Number(entries.SFSAT103 || 0);
-      const s4 = Number(entries.SFSAT201 || 0);
-      const s5 = Number(entries.SFSAT105r || 0); // descriptivo
+/* CSV */
+const allResults = [];
 
-      // Si alguno de los 4 ítems clave es 0 ("no aplicable"), no puntuamos T-score
-      const hasNotApplicable = s1 === 0 || s2 === 0 || s3 === 0 || s4 === 0;
+document.getElementById("promis-form").addEventListener("submit", function(e){
+  e.preventDefault();
 
-      let rawScore = null;
-      let tScore = null;
-      let interpretation = "";
-      const today = new Date().toISOString().slice(0, 10);
+  const form = new FormData(e.target);
+  const sexo = form.get("sexo_ref");
 
-      if (!hasNotApplicable) {
-        rawScore = s1 + s2 + s3 + s4; // solo los 4 ítems del dominio
-        tScore = getTScoreFromRaw(rawScore, sexoRef);
-        interpretation = interpretTScore(tScore);
-      } else {
-        interpretation =
-          "No se puede calcular T-score PROMIS para 'Satisfacción con la vida sexual' porque hay al menos una respuesta 'no aplicable' o faltante, según el manual de puntuación.";
-      }
+  const s1 = Number(form.get("SFSAT101"));
+  const s2 = Number(form.get("SFSAT102r"));
+  const s3 = Number(form.get("SFSAT103"));
+  const s4 = Number(form.get("SFSAT201"));
+  const s5 = Number(form.get("SFSAT105r"));
 
-      // Guardar para CSV
-      allResults.push({
-        fecha: today,
-        sexoRef,
-        SFSAT101: s1,
-        SFSAT102r: s2,
-        SFSAT103: s3,
-        SFSAT201: s4,
-        SFSAT105r: s5,
-        rawScore,
-        tScore,
-        interpretation
-      });
+  let text = [];
+  const today = new Date().toISOString().slice(0,10);
 
-      // Texto para historia clínica / copia rápida
-      const lines = [];
-      lines.push("PROMIS v2.0 – Satisfacción con la vida sexual (versión española)");
-      lines.push("Fecha: " + today);
-      lines.push("Sexo de referencia para normas: " + (sexoRef === "M" ? "hombre" : "mujer"));
-      lines.push("");
-      lines.push("Respuestas (valor numérico):");
-      lines.push("SFSAT101 – Satisfacción con la vida sexual: " + s1);
-      lines.push("SFSAT102r – Placer con la vida sexual: " + s2);
-      lines.push("SFSAT103 – Vida sexual maravillosa (frecuencia): " + s3);
-      lines.push("SFSAT201 – Satisfacción con relaciones de tipo sexual: " + s4);
-      lines.push("SFSAT105r – Disfrute de la actividad sexual (descriptivo): " + s5);
-      lines.push("");
+  text.push("PROMIS v2.0 – Satisfacción con la vida sexual");
+  text.push("Fecha: " + today);
+  text.push("Sexo de referencia para normas: " + (sexo==="M"?"hombre":"mujer"));
+  text.push("");
+  text.push("Respuestas:");
+  text.push("SFSAT101: " + s1);
+  text.push("SFSAT102r: " + s2);
+  text.push("SFSAT103: " + s3);
+  text.push("SFSAT201: " + s4);
+  text.push("SFSAT105r (descriptivo): " + s5);
+  text.push("");
 
-      if (rawScore == null) {
-        lines.push("Puntuación bruta (raw score): no calculable (ítem(s) 'no aplicable' o faltantes).");
-        lines.push("T-score PROMIS: no calculable.");
-      } else {
-        lines.push("Puntuación bruta (4 ítems 'Satisfaction with Sex Life'): " + rawScore);
-        if (tScore == null) {
-          lines.push("T-score PROMIS: no disponible para esta puntuación bruta.");
-        } else {
-          lines.push("T-score PROMIS: " + tScore.toFixed(1));
-        }
-        lines.push("Interpretación: " + interpretation);
-      }
+  if (s4===0){
+    text.push("No se calcula T-score porque la persona no ha tenido relaciones sexuales en los últimos 30 días (criterio PROMIS).");
+  } else {
+    const raw = s1 + s2 + s3 + s4;
+    const t = tScoreTable[raw];
+    const interpre = interpretTScore(t);
 
-      lines.push("");
-      lines.push("Nota: la métrica T-score PROMIS tiene media 50 y DE 10 en la población de referencia.");
+    text.push("Puntuación bruta (raw score): " + raw);
+    text.push("T-score PROMIS: " + t);
+    text.push("Interpretación: " + interpre);
 
-      resultsText.value = lines.join("\n");
-      resultsCard.style.display = "block";
+    allResults.push({
+      fecha: today, sexo, s1, s2, s3, s4, s5, raw, t, interpre
     });
+  }
 
-    copyBtn.addEventListener('click', async function () {
-      try {
-        await navigator.clipboard.writeText(resultsText.value);
-        copyBtn.textContent = "Copiado ✔";
-        setTimeout(() => copyBtn.textContent = "Copiar resultados", 1500);
-      } catch (e) {
-        resultsText.select();
-        document.execCommand('copy');
-        copyBtn.textContent = "Copiado ✔";
-        setTimeout(() => copyBtn.textContent = "Copiar resultados", 1500);
-      }
-    });
+  document.getElementById("resultsText").value = text.join("\n");
+  document.getElementById("resultsCard").style.display = "block";
+});
 
-    downloadCsvBtn.addEventListener('click', function () {
-      if (allResults.length === 0) {
-        alert("Todavía no hay respuestas registradas en esta sesión.");
-        return;
-      }
+/* Copiar */
+document.getElementById("copyBtn").onclick = () =>
+  navigator.clipboard.writeText(document.getElementById("resultsText").value);
 
-      const header = [
-        "fecha",
-        "sexoRef",
-        "SFSAT101",
-        "SFSAT102r",
-        "SFSAT103",
-        "SFSAT201",
-        "SFSAT105r",
-        "rawScore",
-        "tScore",
-        "interpretation"
-      ];
+/* Descargar CSV */
+document.getElementById("downloadCsvBtn").onclick = () => {
+  if (allResults.length===0) return alert("No hay datos aún.");
+  let csv = "fecha,sexo,SFSAT101,SFSAT102r,SFSAT103,SFSAT201,SFSAT105r,raw,t,interpretacion\n";
+  allResults.forEach(r=>{
+    csv += `${r.fecha},${r.sexo},${r.s1},${r.s2},${r.s3},${r.s4},${r.s5},${r.raw},${r.t},"${r.interpre}"\n`;
+  });
+  const blob = new Blob([csv],{type:"text/csv"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "promis_sexlife_scores.csv";
+  a.click();
+};
 
-      const rows = allResults.map(r =>
-        [
-          r.fecha,
-          r.sexoRef,
-          r.SFSAT101,
-          r.SFSAT102r,
-          r.SFSAT103,
-          r.SFSAT201,
-          r.SFSAT105r,
-          r.rawScore == null ? "" : r.rawScore,
-          r.tScore == null ? "" : r.tScore,
-          '"' + (r.interpretation || "").replace(/"/g, '""') + '"'
-        ].join(",")
-      );
-
-      const csvContent = [header.join(","), ...rows].join("\n");
-      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "PROMIS_sexlife_scores.csv";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    });
-  </script>
+</script>
 </body>
 </html>
