@@ -147,4 +147,256 @@
 
     <!-- SFSAT201 -->
     <div class="question">
-      <p>En los últimos 30 días, ¿hasta qué punto ha estado satisfecho/a con sus r
+      <p>En los últimos 30 días, ¿hasta qué punto ha estado satisfecho/a con sus relaciones de tipo sexual? (SFSAT201)</p>
+      <div class="options">
+        <label><input type="radio" name="SFSAT201" value="0" required> 0 – No he tenido una relación de tipo sexual en los últimos 30 días</label>
+        <label><input type="radio" name="SFSAT201" value="1"> 1 – Nada</label>
+        <label><input type="radio" name="SFSAT201" value="2"> 2 – Un poco</label>
+        <label><input type="radio" name="SFSAT201" value="3"> 3 – Algo</label>
+        <label><input type="radio" name="SFSAT201" value="4"> 4 – Bastante</label>
+        <label><input type="radio" name="SFSAT201" value="5"> 5 – Mucho</label>
+      </div>
+    </div>
+
+    <!-- SFSAT105r (descriptivo) -->
+    <div class="question">
+      <p>En los últimos 30 días, cuando ha tenido actividad sexual, ¿cuánto la ha disfrutado? (SFSAT105r)</p>
+      <div class="options">
+        <label><input type="radio" name="SFSAT105r" value="1" required> 1 – Nada</label>
+        <label><input type="radio" name="SFSAT105r" value="2"> 2 – Un poco</label>
+        <label><input type="radio" name="SFSAT105r" value="3"> 3 – Algo</label>
+        <label><input type="radio" name="SFSAT105r" value="4"> 4 – Mucho</label>
+        <label><input type="radio" name="SFSAT105r" value="5"> 5 – Muchísimo</label>
+      </div>
+      <p class="small-muted">
+        Este ítem se utiliza de forma descriptiva y no se incluye en la puntuación PROMIS
+        de “Satisfacción con la vida sexual”.
+      </p>
+    </div>
+
+    <p class="small-muted">
+      Nota: las puntuaciones numéricas son para uso del profesional sanitario.
+    </p>
+
+    <button id="submitBtn" type="submit">Enviar cuestionario</button>
+  </form>
+
+  <div id="resultsCard" class="card">
+    <h3>Resumen de respuestas</h3>
+    <p class="small-muted">
+      Se muestran las respuestas y la puntuación. El T-score y la interpretación
+      se calculan a partir de la tabla oficial PROMIS correspondiente al dominio
+      “Satisfaction with Sex Life” del SexFS v2.0.
+    </p>
+    <textarea id="resultsText" readonly></textarea>
+    <div>
+      <button id="copyBtn" type="button">Copiar resultados</button>
+      <button id="downloadCsvBtn" type="button">Descargar CSV</button>
+    </div>
+  </div>
+
+  <footer class="card">
+    <strong>Información sobre licencia y traducción</strong>
+    <p class="small-muted">
+      Esta versión española de los ítems PROMIS de función sexual y satisfacción fue
+      traducida siguiendo la metodología FACITtrans y validada para población hispanohablante.
+    </p>
+    <p class="small-muted">
+      El uso de la escala PROMIS Scale v2.0 – Sexual Function and Satisfaction: Satisfaction with Sex Life
+      en el proyecto NAVETA-Vitiligo está autorizado mediante acuerdo de licencia entre FARUPEIB y
+      PROMIS Health Organization (PHO), con tasas de distribución exentas para esta medida y lengua.
+    </p>
+    <p class="small-muted">
+      © PROMIS Health Organization (PHO). Este material puede reproducirse sin permiso
+      por clínicos para utilizarlo con sus propios pacientes. Cualquier otro uso, incluido el uso
+      electrónico, requiere el permiso escrito de PHO.
+    </p>
+  </footer>
+
+  <script>
+    // Array en memoria con todas las respuestas de esta sesión
+    const allResults = [];
+
+    // TABLAS RAW -> T-SCORE (DEBES RELLENARLAS CON LOS VALORES DEL MANUAL)
+    // Full Profile (Sexually Active Female), dominio "Satisfaction with Sex Life"
+    // Raw score 4–20. Rellena con los T-score oficiales.
+    const tScoreTableFemale = {
+      // 4: ...,
+      // 5: ...,
+      // 6: ...,
+      // ...
+      // 20: ...
+    };
+
+    // Full Profile (Sexually Active Male), dominio "Satisfaction with Sex Life"
+    const tScoreTableMale = {
+      // 4: ...,
+      // 5: ...,
+      // ...
+      // 20: ...
+    };
+
+    function getTScoreFromRaw(rawScore, sexoRef) {
+      const table = sexoRef === "M" ? tScoreTableMale : tScoreTableFemale;
+      if (!table || Object.keys(table).length === 0) return null;
+      return table[rawScore] ?? null;
+    }
+
+    // Interpretación del T-score: ajusta los puntos de corte según vuestro protocolo.
+    function interpretTScore(tScore) {
+      if (tScore == null) {
+        return "Interpretación pendiente: configure la tabla raw→T y los puntos de corte según el manual PROMIS o el protocolo del estudio.";
+      }
+
+      // EJEMPLO DE ESQUELETO (sin puntos de corte reales):
+      // if (tScore < 40) return "Baja satisfacción con la vida sexual (por debajo de la media de la población de referencia).";
+      // if (tScore <= 60) return "Satisfacción dentro del rango medio de la población de referencia.";
+      // return "Alta satisfacción con la vida sexual (por encima de la media de la población de referencia).";
+
+      return "T-score calculado. Defina las categorías de interpretación según el manual/protocolo.";
+    }
+
+    const form = document.getElementById('promis-form');
+    const resultsCard = document.getElementById('resultsCard');
+    const resultsText = document.getElementById('resultsText');
+    const copyBtn = document.getElementById('copyBtn');
+    const downloadCsvBtn = document.getElementById('downloadCsvBtn');
+
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+
+      const formData = new FormData(form);
+      const entries = Object.fromEntries(formData.entries());
+      const sexoRef = entries.sexo_ref || "F";
+
+      const s1 = Number(entries.SFSAT101 || 0);
+      const s2 = Number(entries.SFSAT102r || 0);
+      const s3 = Number(entries.SFSAT103 || 0);
+      const s4 = Number(entries.SFSAT201 || 0);
+      const s5 = Number(entries.SFSAT105r || 0); // descriptivo
+
+      // según el manual: si hay algún 0 (respuesta "no aplicable"/falta),
+      // no se debe calcular T-score con la tabla
+      const hasNotApplicable = s1 === 0 || s2 === 0 || s3 === 0 || s4 === 0;
+
+      let rawScore = null;
+      let tScore = null;
+      let interpretation = "";
+      const today = new Date().toISOString().slice(0, 10);
+
+      if (!hasNotApplicable) {
+        rawScore = s1 + s2 + s3 + s4; // solo los 4 ítems del dominio
+        tScore = getTScoreFromRaw(rawScore, sexoRef);
+        interpretation = interpretTScore(tScore);
+      } else {
+        interpretation =
+          "No se puede calcular T-score PROMIS para 'Satisfacción con la vida sexual' porque hay al menos una respuesta 'no aplicable' o faltante, según el manual de puntuación.";
+      }
+
+      allResults.push({
+        fecha: today,
+        sexoRef,
+        SFSAT101: s1,
+        SFSAT102r: s2,
+        SFSAT103: s3,
+        SFSAT201: s4,
+        SFSAT105r: s5,
+        rawScore,
+        tScore,
+        interpretation
+      });
+
+      const lines = [];
+      lines.push("PROMIS v2.0 – Satisfacción con la vida sexual (versión española)");
+      lines.push("Fecha: " + today);
+      lines.push("Sexo de referencia para normas: " + (sexoRef === "M" ? "hombre" : "mujer"));
+      lines.push("");
+      lines.push("Respuestas (valor numérico):");
+      lines.push("SFSAT101 – Satisfacción con la vida sexual: " + s1);
+      lines.push("SFSAT102r – Placer con la vida sexual: " + s2);
+      lines.push("SFSAT103 – Vida sexual maravillosa (frecuencia): " + s3);
+      lines.push("SFSAT201 – Satisfacción con relaciones de tipo sexual: " + s4);
+      lines.push("SFSAT105r – Disfrute de la actividad sexual (descriptivo): " + s5);
+      lines.push("");
+
+      if (rawScore == null) {
+        lines.push("Puntuación PROMIS: no calculable (ítem(s) 'no aplicable' o faltantes según manual).");
+      } else {
+        lines.push("Puntuación bruta (4 ítems PROMIS 'Satisfaction with Sex Life'): " + rawScore);
+        if (tScore == null) {
+          lines.push("T-score: pendiente (rellenar tabla raw→T en el código con los valores del manual).");
+        } else {
+          lines.push("T-score PROMIS: " + tScore.toFixed(1));
+        }
+        lines.push("Interpretación: " + interpretation);
+      }
+
+      lines.push("");
+      lines.push("Nota: los valores deben interpretarse siguiendo las tablas/algoritmos oficiales PROMIS y el protocolo del estudio.");
+
+      resultsText.value = lines.join("\n");
+      resultsCard.style.display = "block";
+    });
+
+    copyBtn.addEventListener('click', async function () {
+      try {
+        await navigator.clipboard.writeText(resultsText.value);
+        copyBtn.textContent = "Copiado ✔";
+        setTimeout(() => copyBtn.textContent = "Copiar resultados", 1500);
+      } catch (e) {
+        resultsText.select();
+        document.execCommand('copy');
+        copyBtn.textContent = "Copiado ✔";
+        setTimeout(() => copyBtn.textContent = "Copiar resultados", 1500);
+      }
+    });
+
+    downloadCsvBtn.addEventListener('click', function () {
+      if (allResults.length === 0) {
+        alert("Todavía no hay respuestas registradas en esta sesión.");
+        return;
+      }
+
+      const header = [
+        "fecha",
+        "sexoRef",
+        "SFSAT101",
+        "SFSAT102r",
+        "SFSAT103",
+        "SFSAT201",
+        "SFSAT105r",
+        "rawScore",
+        "tScore",
+        "interpretation"
+      ];
+
+      const rows = allResults.map(r =>
+        [
+          r.fecha,
+          r.sexoRef,
+          r.SFSAT101,
+          r.SFSAT102r,
+          r.SFSAT103,
+          r.SFSAT201,
+          r.SFSAT105r,
+          r.rawScore == null ? "" : r.rawScore,
+          r.tScore == null ? "" : r.tScore,
+          '"' + (r.interpretation || "").replace(/"/g, '""') + '"'
+        ].join(",")
+      );
+
+      const csvContent = [header.join(","), ...rows].join("\n");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "PROMIS_sexlife_scores.csv";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+  </script>
+</body>
+</html>
