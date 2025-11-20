@@ -140,6 +140,7 @@
 <script>
 /* -----------------------------------
    TABLA RAW → T-SCORE (OFICIAL PROMIS)
+   Satisfaction with Sex Life v2.0
 --------------------------------------*/
 
 const tScoreTable = {
@@ -164,15 +165,33 @@ const tScoreTable = {
 
 /* INTERPRETACIÓN */
 function interpretTScore(t) {
-  if (t < 40) return "Baja satisfacción sexual (−1 DE por debajo del promedio)";
-  if (t <= 60) return "Satisfacción dentro del rango promedio (±1 DE)";
-  return "Alta satisfacción sexual (+1 DE por encima del promedio)";
+  if (t < 40) {
+    return "Baja satisfacción sexual (≈ más de 1 DE por debajo del promedio de la población de referencia).";
+  } else if (t <= 60) {
+    return "Satisfacción con la vida sexual dentro del rango medio (±1 DE alrededor de la media).";
+  } else {
+    return "Alta satisfacción sexual (≈ más de 1 DE por encima del promedio de la población de referencia).";
+  }
 }
 
-/* CSV */
+/* GENERAR CÓDIGO ÚNICO */
+function generarIdUnico() {
+  const ahora = Date.now().toString(36);
+  const rand = Math.random().toString(36).slice(2, 6);
+  return "PROMIS-" + ahora + "-" + rand;
+}
+
+/* CSV – lista de todos los registros de esta sesión */
 const allResults = [];
 
-document.getElementById("promis-form").addEventListener("submit", function(e){
+const formEl = document.getElementById("promis-form");
+const resultsCard = document.getElementById("resultsCard");
+const resultsText = document.getElementById("resultsText");
+const copyBtn = document.getElementById("copyBtn");
+const downloadCsvBtn = document.getElementById("downloadCsvBtn");
+
+/* MANEJAR ENVÍO DEL FORMULARIO */
+formEl.addEventListener("submit", function(e){
   e.preventDefault();
 
   const form = new FormData(e.target);
@@ -184,59 +203,130 @@ document.getElementById("promis-form").addEventListener("submit", function(e){
   const s4 = Number(form.get("SFSAT201"));
   const s5 = Number(form.get("SFSAT105r"));
 
-  let text = [];
-  const today = new Date().toISOString().slice(0,10);
+  // Fecha y hora actuales
+  const now = new Date();
+  const datetime = now.toISOString();           // 2025-11-20T12:34:56.000Z
+  const fecha = datetime.slice(0, 10);          // YYYY-MM-DD
+  const hora = datetime.slice(11, 19);          // HH:MM:SS
 
-  text.push("PROMIS v2.0 – Satisfacción con la vida sexual");
-  text.push("Fecha: " + today);
+  // ID único del registro
+  const id = generarIdUnico();
+
+  let text = [];
+
+  text.push("PROMIS v2.0 – Satisfacción con la vida sexual (versión española)");
+  text.push("Código de registro: " + id);
+  text.push("Fecha: " + fecha + "   Hora: " + hora);
   text.push("Sexo de referencia para normas: " + (sexo==="M"?"hombre":"mujer"));
   text.push("");
-  text.push("Respuestas:");
-  text.push("SFSAT101: " + s1);
-  text.push("SFSAT102r: " + s2);
-  text.push("SFSAT103: " + s3);
-  text.push("SFSAT201: " + s4);
-  text.push("SFSAT105r (descriptivo): " + s5);
+  text.push("Respuestas (valor numérico):");
+  text.push("SFSAT101 – Satisfacción con la vida sexual: " + s1);
+  text.push("SFSAT102r – Placer con la vida sexual: " + s2);
+  text.push("SFSAT103 – Vida sexual maravillosa (frecuencia): " + s3);
+  text.push("SFSAT201 – Satisfacción con relaciones de tipo sexual: " + s4);
+  text.push("SFSAT105r – Disfrute de la actividad sexual (descriptivo): " + s5);
   text.push("");
 
-  if (s4===0){
-    text.push("No se calcula T-score porque la persona no ha tenido relaciones sexuales en los últimos 30 días (criterio PROMIS).");
-  } else {
-    const raw = s1 + s2 + s3 + s4;
-    const t = tScoreTable[raw];
-    const interpre = interpretTScore(t);
+  let raw = null;
+  let t = null;
+  let interpre = "";
 
-    text.push("Puntuación bruta (raw score): " + raw);
-    text.push("T-score PROMIS: " + t);
+  if (s4 === 0) {
+    // Caso PROMIS: no escorable si no hay relaciones sexuales recientes
+    interpre = "No se calcula T-score porque la persona informa no haber tenido relaciones sexuales en los últimos 30 días (SFSAT201 = 0). El dominio 'Satisfaction with Sex Life' está calibrado para personas sexualmente activas.";
+    text.push("Puntuación bruta (raw score): no calculable.");
+    text.push("T-score PROMIS: no calculable.");
     text.push("Interpretación: " + interpre);
+  } else {
+    raw = s1 + s2 + s3 + s4;
+    t = tScoreTable[raw] ?? null;
 
-    allResults.push({
-      fecha: today, sexo, s1, s2, s3, s4, s5, raw, t, interpre
-    });
+    if (t == null) {
+      interpre = "No se puede calcular T-score para esta puntuación bruta (fuera de rango de la tabla).";
+      text.push("Puntuación bruta (raw score): " + raw);
+      text.push("T-score PROMIS: no disponible.");
+      text.push("Interpretación: " + interpre);
+    } else {
+      interpre = interpretTScore(t);
+      text.push("Puntuación bruta (4 ítems 'Satisfaction with Sex Life'): " + raw);
+      text.push("T-score PROMIS: " + t.toFixed(1));
+      text.push("Interpretación: " + interpre);
+    }
   }
 
-  document.getElementById("resultsText").value = text.join("\n");
-  document.getElementById("resultsCard").style.display = "block";
+  text.push("");
+  text.push("Nota: la métrica T-score PROMIS tiene media 50 y DE 10 en la población de referencia.");
+
+  resultsText.value = text.join("\n");
+  resultsCard.style.display = "block";
+
+  // Guardar registro en memoria para CSV (aunque no tenga T-score se guarda igual)
+  allResults.push({
+    id,
+    datetime,
+    fecha,
+    hora,
+    sexo,
+    SFSAT101: s1,
+    SFSAT102r: s2,
+    SFSAT103: s3,
+    SFSAT201: s4,
+    SFSAT105r: s5,
+    rawScore: raw,
+    tScore: t,
+    interpretacion: interpre
+  });
 });
 
-/* Copiar */
-document.getElementById("copyBtn").onclick = () =>
-  navigator.clipboard.writeText(document.getElementById("resultsText").value);
-
-/* Descargar CSV */
-document.getElementById("downloadCsvBtn").onclick = () => {
-  if (allResults.length===0) return alert("No hay datos aún.");
-  let csv = "fecha,sexo,SFSAT101,SFSAT102r,SFSAT103,SFSAT201,SFSAT105r,raw,t,interpretacion\n";
-  allResults.forEach(r=>{
-    csv += `${r.fecha},${r.sexo},${r.s1},${r.s2},${r.s3},${r.s4},${r.s5},${r.raw},${r.t},"${r.interpre}"\n`;
+/* COPIAR RESULTADOS */
+copyBtn.addEventListener("click", () => {
+  const txt = resultsText.value;
+  if (!txt) return;
+  navigator.clipboard.writeText(txt).then(()=>{
+    copyBtn.textContent = "Copiado ✔";
+    setTimeout(()=> copyBtn.textContent = "Copiar", 1500);
   });
-  const blob = new Blob([csv],{type:"text/csv"});
+});
+
+/* DESCARGAR CSV */
+downloadCsvBtn.addEventListener("click", () => {
+  if (allResults.length === 0) {
+    alert("Todavía no hay registros en esta sesión.");
+    return;
+  }
+
+  let csv = "id,datetime,fecha,hora,sexo,SFSAT101,SFSAT102r,SFSAT103,SFSAT201,SFSAT105r,rawScore,tScore,interpretacion\n";
+
+  allResults.forEach(r => {
+    const row = [
+      r.id,
+      r.datetime,
+      r.fecha,
+      r.hora,
+      r.sexo,
+      r.SFSAT101,
+      r.SFSAT102r,
+      r.SFSAT103,
+      r.SFSAT201,
+      r.SFSAT105r,
+      r.rawScore == null ? "" : r.rawScore,
+      r.tScore == null ? "" : r.tScore.toFixed ? r.tScore.toFixed(1) : r.tScore,
+      '"' + (r.interpretacion || "").replace(/"/g, '""') + '"'
+    ].join(",");
+    csv += row + "\n";
+  });
+
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
-  a.href = url; a.download = "promis_sexlife_scores.csv";
+  a.href = url;
+  a.download = "promis_sexlife_scores.csv";
+  document.body.appendChild(a);
   a.click();
-};
-
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
 </script>
+
 </body>
 </html>
