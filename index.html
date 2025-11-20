@@ -7,7 +7,7 @@
   <style>
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      max-width: 800px;
+      max-width: 900px;
       margin: 0 auto;
       padding: 1.5rem;
       line-height: 1.5;
@@ -62,9 +62,10 @@
     #submitBtn:hover {
       opacity: 0.9;
     }
-    #copyBtn {
+    #copyBtn, #downloadCsvBtn {
       background: #e5e7eb;
       margin-top: 0.5rem;
+      margin-right: 0.5rem;
     }
     #resultsCard {
       display: none;
@@ -74,6 +75,11 @@
       min-height: 120px;
       font-family: monospace;
       font-size: 0.9rem;
+    }
+    footer {
+      font-size: 0.8rem;
+      color: #555;
+      margin-top: 1rem;
     }
   </style>
 </head>
@@ -90,6 +96,19 @@
   </div>
 
   <form id="promis-form" class="card">
+    <!-- Sexo de referencia -->
+    <div class="question">
+      <p>Sexo con el que desea que se comparen sus resultados en las normas PROMIS:</p>
+      <div class="options">
+        <label><input type="radio" name="sexo_ref" value="F" required> Mujer</label>
+        <label><input type="radio" name="sexo_ref" value="M"> Hombre</label>
+      </div>
+      <p class="small-muted">
+        Esta información solo se utiliza para aplicar las tablas de puntuación PROMIS
+        con normas específicas por sexo.
+      </p>
+    </div>
+
     <!-- SFSAT101 -->
     <div class="question">
       <p>En los últimos 30 días, ¿hasta qué punto ha estado satisfecho/a con su vida sexual? (SFSAT101)</p>
@@ -128,95 +147,4 @@
 
     <!-- SFSAT201 -->
     <div class="question">
-      <p>En los últimos 30 días, ¿hasta qué punto ha estado satisfecho/a con sus relaciones de tipo sexual? (SFSAT201)</p>
-      <div class="options">
-        <label><input type="radio" name="SFSAT201" value="0" required> 0 – No he tenido una relación de tipo sexual en los últimos 30 días</label>
-        <label><input type="radio" name="SFSAT201" value="1"> 1 – Nada</label>
-        <label><input type="radio" name="SFSAT201" value="2"> 2 – Un poco</label>
-        <label><input type="radio" name="SFSAT201" value="3"> 3 – Algo</label>
-        <label><input type="radio" name="SFSAT201" value="4"> 4 – Bastante</label>
-        <label><input type="radio" name="SFSAT201" value="5"> 5 – Mucho</label>
-      </div>
-    </div>
-
-    <!-- SFSAT105r -->
-    <div class="question">
-      <p>En los últimos 30 días, cuando ha tenido actividad sexual, ¿cuánto la ha disfrutado? (SFSAT105r)</p>
-      <div class="options">
-        <label><input type="radio" name="SFSAT105r" value="1" required> 1 – Nada</label>
-        <label><input type="radio" name="SFSAT105r" value="2"> 2 – Un poco</label>
-        <label><input type="radio" name="SFSAT105r" value="3"> 3 – Algo</label>
-        <label><input type="radio" name="SFSAT105r" value="4"> 4 – Mucho</label>
-        <label><input type="radio" name="SFSAT105r" value="5"> 5 – Muchísimo</label>
-      </div>
-    </div>
-
-    <p class="small-muted">
-      Nota: las puntuaciones numéricas son para uso del profesional sanitario.
-    </p>
-
-    <button id="submitBtn" type="submit">Enviar cuestionario</button>
-  </form>
-
-  <div id="resultsCard" class="card">
-    <h3>Resumen de respuestas</h3>
-    <p class="small-muted">
-      Estas son las respuestas registradas. Su profesional puede utilizar los valores
-      numéricos para el cálculo de las puntuaciones PROMIS según los procedimientos oficiales.
-    </p>
-    <textarea id="resultsText" readonly></textarea>
-    <button id="copyBtn" type="button">Copiar resultados</button>
-  </div>
-
-  <script>
-    const form = document.getElementById('promis-form');
-    const resultsCard = document.getElementById('resultsCard');
-    const resultsText = document.getElementById('resultsText');
-    const copyBtn = document.getElementById('copyBtn');
-
-    form.addEventListener('submit', function (event) {
-      event.preventDefault();
-
-      const formData = new FormData(form);
-      const entries = Object.fromEntries(formData.entries());
-
-      // Construimos un texto legible para historia clínica o volcado manual
-      const lines = [];
-      lines.push("PROMIS v2.0 – Satisfacción con la vida sexual (versión española)");
-      lines.push("Fecha: " + new Date().toISOString().slice(0, 10));
-      lines.push("");
-      lines.push("Respuestas (valor numérico):");
-      lines.push("SFSAT101 – Satisfacción con la vida sexual: " + (entries.SFSAT101 || "no respondido"));
-      lines.push("SFSAT102r – Placer con la vida sexual: " + (entries.SFSAT102r || "no respondido"));
-      lines.push("SFSAT103 – Vida sexual maravillosa (frecuencia): " + (entries.SFSAT103 || "no respondido"));
-      lines.push("SFSAT201 – Satisfacción con relaciones de tipo sexual: " + (entries.SFSAT201 || "no respondido"));
-      lines.push("SFSAT105r – Disfrute de la actividad sexual: " + (entries.SFSAT105r || "no respondido"));
-      lines.push("");
-      lines.push("Nota: los valores deben transformarse a puntuaciones T PROMIS siguiendo las tablas/algoritmos oficiales.");
-
-      resultsText.value = lines.join("\n");
-      resultsCard.style.display = "block";
-
-      // Opcional: aquí podrías enviar los datos a un backend propio/REDCap/etc.
-      // fetch("https://tu-endpoint.clinico/api/promis", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify(entries)
-      // });
-    });
-
-    copyBtn.addEventListener('click', async function () {
-      try {
-        await navigator.clipboard.writeText(resultsText.value);
-        copyBtn.textContent = "Copiado ✔";
-        setTimeout(() => copyBtn.textContent = "Copiar resultados", 1500);
-      } catch (e) {
-        resultsText.select();
-        document.execCommand('copy');
-        copyBtn.textContent = "Copiado ✔";
-        setTimeout(() => copyBtn.textContent = "Copiar resultados", 1500);
-      }
-    });
-  </script>
-</body>
-</html>
+      <p>En los últimos 30 días, ¿hasta qué punto ha estado satisfecho/a con sus r
