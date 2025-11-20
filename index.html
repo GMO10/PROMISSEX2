@@ -72,7 +72,7 @@
     }
     textarea {
       width: 100%;
-      min-height: 120px;
+      min-height: 140px;
       font-family: monospace;
       font-size: 0.9rem;
     }
@@ -105,7 +105,7 @@
       </div>
       <p class="small-muted">
         Esta información solo se utiliza para aplicar las tablas de puntuación PROMIS
-        con normas específicas por sexo.
+        con normas específicas por sexo (en este ejemplo se usa la misma tabla para ambos).
       </p>
     </div>
 
@@ -158,7 +158,7 @@
       </div>
     </div>
 
-    <!-- SFSAT105r (descriptivo) -->
+    <!-- SFSAT105r (descriptivo, no entra en el T-score) -->
     <div class="question">
       <p>En los últimos 30 días, cuando ha tenido actividad sexual, ¿cuánto la ha disfrutado? (SFSAT105r)</p>
       <div class="options">
@@ -182,11 +182,10 @@
   </form>
 
   <div id="resultsCard" class="card">
-    <h3>Resumen de respuestas</h3>
+    <h3>Resumen de resultados</h3>
     <p class="small-muted">
-      Se muestran las respuestas y la puntuación. El T-score y la interpretación
-      se calculan a partir de la tabla oficial PROMIS correspondiente al dominio
-      “Satisfaction with Sex Life” del SexFS v2.0.
+      Se muestran las respuestas, la puntuación bruta (raw score) y el T-score PROMIS
+      para el dominio “Satisfaction with Sex Life” (media 50, DE 10).
     </p>
     <textarea id="resultsText" readonly></textarea>
     <div>
@@ -203,8 +202,7 @@
     </p>
     <p class="small-muted">
       El uso de la escala PROMIS Scale v2.0 – Sexual Function and Satisfaction: Satisfaction with Sex Life
-      en el proyecto NAVETA-Vitiligo está autorizado mediante acuerdo de licencia entre FARUPEIB y
-      PROMIS Health Organization (PHO), con tasas de distribución exentas para esta medida y lengua.
+      está autorizado mediante acuerdo de licencia con PROMIS Health Organization (PHO).
     </p>
     <p class="small-muted">
       © PROMIS Health Organization (PHO). Este material puede reproducirse sin permiso
@@ -214,46 +212,54 @@
   </footer>
 
   <script>
-    // Array en memoria con todas las respuestas de esta sesión
+    // Array en memoria con todas las respuestas de esta sesión (para CSV local)
     const allResults = [];
 
-    // TABLAS RAW -> T-SCORE (DEBES RELLENARLAS CON LOS VALORES DEL MANUAL)
-    // Full Profile (Sexually Active Female), dominio "Satisfaction with Sex Life"
-    // Raw score 4–20. Rellena con los T-score oficiales.
+    // Tabla oficial RAW -> T-score para "Satisfaction with Sex Life"
+    // (la que me pasaste: raw 4–20)
     const tScoreTableFemale = {
-      // 4: ...,
-      // 5: ...,
-      // 6: ...,
-      // ...
-      // 20: ...
+      4: 30.7,
+      5: 35.6,
+      6: 37.6,
+      7: 39.1,
+      8: 40.5,
+      9: 41.8,
+      10: 43.3,
+      11: 44.7,
+      12: 46.2,
+      13: 47.8,
+      14: 49.4,
+      15: 51.1,
+      16: 52.8,
+      17: 54.6,
+      18: 56.7,
+      19: 59.5,
+      20: 65.1
     };
 
-    // Full Profile (Sexually Active Male), dominio "Satisfaction with Sex Life"
-    const tScoreTableMale = {
-      // 4: ...,
-      // 5: ...,
-      // ...
-      // 20: ...
-    };
+    // De momento usamos la misma tabla para hombres.
+    // Si el manual tiene una tabla distinta masculina, la puedes poner aquí.
+    const tScoreTableMale = { ...tScoreTableFemale };
 
     function getTScoreFromRaw(rawScore, sexoRef) {
       const table = sexoRef === "M" ? tScoreTableMale : tScoreTableFemale;
-      if (!table || Object.keys(table).length === 0) return null;
+      if (!table) return null;
       return table[rawScore] ?? null;
     }
 
-    // Interpretación del T-score: ajusta los puntos de corte según vuestro protocolo.
+    // Interpretación sencilla del T-score en la métrica PROMIS (media 50, DE 10).
     function interpretTScore(tScore) {
       if (tScore == null) {
-        return "Interpretación pendiente: configure la tabla raw→T y los puntos de corte según el manual PROMIS o el protocolo del estudio.";
+        return "No se ha podido calcular el T-score (puntuación bruta fuera de rango o tabla incompleta).";
       }
 
-      // EJEMPLO DE ESQUELETO (sin puntos de corte reales):
-      // if (tScore < 40) return "Baja satisfacción con la vida sexual (por debajo de la media de la población de referencia).";
-      // if (tScore <= 60) return "Satisfacción dentro del rango medio de la población de referencia.";
-      // return "Alta satisfacción con la vida sexual (por encima de la media de la población de referencia).";
-
-      return "T-score calculado. Defina las categorías de interpretación según el manual/protocolo.";
+      if (tScore < 40) {
+        return "Baja satisfacción con la vida sexual (más de 1 DE por debajo de la media de la población de referencia).";
+      } else if (tScore <= 60) {
+        return "Satisfacción con la vida sexual dentro del rango medio (±1 DE alrededor de la media).";
+      } else {
+        return "Alta satisfacción con la vida sexual (más de 1 DE por encima de la media de la población de referencia).";
+      }
     }
 
     const form = document.getElementById('promis-form');
@@ -275,8 +281,7 @@
       const s4 = Number(entries.SFSAT201 || 0);
       const s5 = Number(entries.SFSAT105r || 0); // descriptivo
 
-      // según el manual: si hay algún 0 (respuesta "no aplicable"/falta),
-      // no se debe calcular T-score con la tabla
+      // Si alguno de los 4 ítems clave es 0 ("no aplicable"), no puntuamos T-score
       const hasNotApplicable = s1 === 0 || s2 === 0 || s3 === 0 || s4 === 0;
 
       let rawScore = null;
@@ -293,6 +298,7 @@
           "No se puede calcular T-score PROMIS para 'Satisfacción con la vida sexual' porque hay al menos una respuesta 'no aplicable' o faltante, según el manual de puntuación.";
       }
 
+      // Guardar para CSV
       allResults.push({
         fecha: today,
         sexoRef,
@@ -306,6 +312,7 @@
         interpretation
       });
 
+      // Texto para historia clínica / copia rápida
       const lines = [];
       lines.push("PROMIS v2.0 – Satisfacción con la vida sexual (versión española)");
       lines.push("Fecha: " + today);
@@ -320,11 +327,12 @@
       lines.push("");
 
       if (rawScore == null) {
-        lines.push("Puntuación PROMIS: no calculable (ítem(s) 'no aplicable' o faltantes según manual).");
+        lines.push("Puntuación bruta (raw score): no calculable (ítem(s) 'no aplicable' o faltantes).");
+        lines.push("T-score PROMIS: no calculable.");
       } else {
-        lines.push("Puntuación bruta (4 ítems PROMIS 'Satisfaction with Sex Life'): " + rawScore);
+        lines.push("Puntuación bruta (4 ítems 'Satisfaction with Sex Life'): " + rawScore);
         if (tScore == null) {
-          lines.push("T-score: pendiente (rellenar tabla raw→T en el código con los valores del manual).");
+          lines.push("T-score PROMIS: no disponible para esta puntuación bruta.");
         } else {
           lines.push("T-score PROMIS: " + tScore.toFixed(1));
         }
@@ -332,7 +340,7 @@
       }
 
       lines.push("");
-      lines.push("Nota: los valores deben interpretarse siguiendo las tablas/algoritmos oficiales PROMIS y el protocolo del estudio.");
+      lines.push("Nota: la métrica T-score PROMIS tiene media 50 y DE 10 en la población de referencia.");
 
       resultsText.value = lines.join("\n");
       resultsCard.style.display = "block";
